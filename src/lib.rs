@@ -18,14 +18,24 @@
 //! pointer instead of walking every tree node.
 //!
 //! ```rust
+//! use arena_btreemap::{Allocator, BTreeMap, Global};
+//!
+//! // With the default global allocator, works just like std::collections::BTreeMap:
+//! let mut map = BTreeMap::new();
+//! map.insert("hello", "world");
+//! map.insert("foo", "bar");
+//! assert_eq!(map.get(&"hello"), Some(&"world"));
+//! ```
+//!
+//! With a custom arena allocator (e.g. `bumpalo`), dropping the map is O(1):
+//!
+//! ```text
 //! use arena_btreemap::BTreeMap;
 //! use bumpalo::Bump;
 //!
 //! let bump = Bump::new();
-//! let mut map = BTreeMap::new_in(&bump);
+//! let mut map = BTreeMap::<&str, &str, &Bump>::new_in(&bump);
 //! map.insert("hello", "world");
-//! map.insert("foo", "bar");
-//!
 //! // When `map` drops, the arena's bump pointer resets — no per-node deallocation.
 //! // When `bump` drops, all memory is freed in one operation.
 //! ```
