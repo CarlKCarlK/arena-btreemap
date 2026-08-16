@@ -103,7 +103,7 @@ pub(super) const MIN_LEN: usize = node::MIN_LEN_AFTER_SPLIT;
 /// ```
 /// use arena_btreemap::BTreeMap;
 ///
-/// let solar_distance = BTreeMap::from([
+/// let solar_distance: BTreeMap<&str, f64> = BTreeMap::from([
 ///     ("Mercury", 0.4),
 ///     ("Venus", 0.7),
 ///     ("Earth", 1.0),
@@ -2374,21 +2374,21 @@ impl<'a, K, V> DoubleEndedIterator for RangeMut<'a, K, V> {
 
 impl<K, V> FusedIterator for RangeMut<'_, K, V> {}
 
-impl<K: Ord, V> FromIterator<(K, V)> for BTreeMap<K, V> {
-    /// Constructs a `BTreeMap<K, V>` from an iterator of key-value pairs.
+impl<K: Ord, V, A: Allocator + Clone + Default> FromIterator<(K, V)> for BTreeMap<K, V, A> {
+    /// Constructs a `BTreeMap<K, V, A>` from an iterator of key-value pairs.
     ///
     /// If the iterator produces any pairs with equal keys,
     /// all but one of the corresponding values will be dropped.
-    fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> BTreeMap<K, V> {
+    fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> BTreeMap<K, V, A> {
         let mut inputs: Vec<_> = iter.into_iter().collect();
 
         if inputs.is_empty() {
-            return BTreeMap::new();
+            return BTreeMap::new_in(A::default());
         }
 
         // use stable sort to preserve the insertion order.
         inputs.sort_by(|a, b| a.0.cmp(&b.0));
-        BTreeMap::bulk_build_from_sorted_iter(inputs, Global)
+        BTreeMap::bulk_build_from_sorted_iter(inputs, A::default())
     }
 }
 
@@ -2418,10 +2418,10 @@ impl<K: Hash, V: Hash, A: Allocator + Clone> Hash for BTreeMap<K, V, A> {
     }
 }
 
-impl<K, V> Default for BTreeMap<K, V> {
-    /// Creates an empty `BTreeMap`.
-    fn default() -> BTreeMap<K, V> {
-        BTreeMap::new()
+impl<K, V, A: Allocator + Clone + Default> Default for BTreeMap<K, V, A> {
+    /// Creates an empty `BTreeMap` with the default allocator.
+    fn default() -> BTreeMap<K, V, A> {
+        BTreeMap::new_in(A::default())
     }
 }
 
@@ -2471,13 +2471,15 @@ where
     }
 }
 
-impl<K: Ord, V, const N: usize> From<[(K, V); N]> for BTreeMap<K, V> {
-    /// Converts a `[(K, V); N]` into a `BTreeMap<K, V>`.
+impl<K: Ord, V, A: Allocator + Clone + Default, const N: usize> From<[(K, V); N]>
+    for BTreeMap<K, V, A>
+{
+    /// Converts a `[(K, V); N]` into a `BTreeMap<K, V, A>`.
     ///
     /// If any entries in the array have equal keys,
     /// all but one of the corresponding values will be dropped.
     ///
-    /// ```
+    /// ```rust
     /// use arena_btreemap::BTreeMap;
     ///
     /// let map1 = BTreeMap::from([(1, 2), (3, 4)]);
@@ -2486,12 +2488,12 @@ impl<K: Ord, V, const N: usize> From<[(K, V); N]> for BTreeMap<K, V> {
     /// ```
     fn from(mut arr: [(K, V); N]) -> Self {
         if N == 0 {
-            return BTreeMap::new();
+            return BTreeMap::new_in(A::default());
         }
 
         // use stable sort to preserve the insertion order.
         arr.sort_by(|a, b| a.0.cmp(&b.0));
-        BTreeMap::bulk_build_from_sorted_iter(arr, Global)
+        BTreeMap::bulk_build_from_sorted_iter(arr, A::default())
     }
 }
 
@@ -2532,7 +2534,7 @@ impl<K, V, A: Allocator + Clone> BTreeMap<K, V, A> {
     /// ```
     /// use arena_btreemap::BTreeMap;
     ///
-    /// let mut map = BTreeMap::from([
+    /// let mut map: BTreeMap<_, _> = BTreeMap::from([
     ///    ("a", 1),
     ///    ("b", 2),
     ///    ("c", 3),
@@ -2667,7 +2669,7 @@ impl<K, V, A: Allocator + Clone> BTreeMap<K, V, A> {
     /// use arena_btreemap::BTreeMap;
     /// use std::ops::Bound;
     ///
-    /// let map = BTreeMap::from([
+    /// let map: BTreeMap<_, _> = BTreeMap::from([
     ///     (1, "a"),
     ///     (2, "b"),
     ///     (3, "c"),
@@ -2718,7 +2720,7 @@ impl<K, V, A: Allocator + Clone> BTreeMap<K, V, A> {
     /// use arena_btreemap::BTreeMap;
     /// use std::ops::Bound;
     ///
-    /// let mut map = BTreeMap::from([
+    /// let mut map: BTreeMap<_, _> = BTreeMap::from([
     ///     (1, "a"),
     ///     (2, "b"),
     ///     (3, "c"),
@@ -2786,7 +2788,7 @@ impl<K, V, A: Allocator + Clone> BTreeMap<K, V, A> {
     /// use arena_btreemap::BTreeMap;
     /// use std::ops::Bound;
     ///
-    /// let map = BTreeMap::from([
+    /// let map: BTreeMap<_, _> = BTreeMap::from([
     ///     (1, "a"),
     ///     (2, "b"),
     ///     (3, "c"),
@@ -2837,7 +2839,7 @@ impl<K, V, A: Allocator + Clone> BTreeMap<K, V, A> {
     /// use arena_btreemap::BTreeMap;
     /// use std::ops::Bound;
     ///
-    /// let mut map = BTreeMap::from([
+    /// let mut map: BTreeMap<_, _> = BTreeMap::from([
     ///     (1, "a"),
     ///     (2, "b"),
     ///     (3, "c"),

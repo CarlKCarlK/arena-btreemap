@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-08-17
+
+### Changed
+
+- `Default`, `From<[(K, V); N]>`, and `FromIterator<(K, V)>` impls are now generic over `A: Allocator + Clone + Default`, enabling `BTreeMap::default()` and `BTreeMap::from(...)` to work with custom allocators.
+- Doctests updated with type annotations to resolve type inference ambiguity introduced by the generic impls.
+
+## [0.1.1] - 2026-08-16
+
+### Added
+
+- `serde` feature with `Serialize`/`Deserialize` impls for `BTreeMap<K, V, A>`.
+
 ## [0.1.0] - 2026-08-16
 
 ### Added
