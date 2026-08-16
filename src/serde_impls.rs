@@ -2,18 +2,30 @@
 //!
 //! Enabled by the `serde` cargo feature. Mirrors std's BTreeMap serde impls:
 //! serializes as a map (sequence of key-value pairs), deserializes by
-//! collecting into a new `BTreeMap` with the `Global` allocator.
+//! collecting into a new `BTreeMap` with the appropriate allocator.
+//
+// The `Serialize` impl is generic over the allocator — it only reads.
+// The `Deserialize` impl is generic over `A: Allocator + Clone + Default` —
+// it constructs via `BTreeMap::new_in(A::default())`.
+// A blanket impl for `A: Allocator + Clone + Default` covers both `Global`
+// and custom allocators like `SyncBumpArena`.
 
+use crate::alloc::Allocator;
 use crate::BTreeMap;
 use core::fmt;
 use core::marker::PhantomData;
 use serde::de::{MapAccess, SeqAccess, Visitor};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-impl<K, V> Serialize for BTreeMap<K, V>
+// ───────────────────────────────────────────────────────────────────────
+// Serialize — generic over allocator (only reads)
+// ───────────────────────────────────────────────────────────────────────
+
+impl<K, V, A> Serialize for BTreeMap<K, V, A>
 where
     K: Serialize + Ord,
     V: Serialize,
+    A: Allocator + Clone,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -23,35 +35,41 @@ where
     }
 }
 
-impl<'de, K, V> Deserialize<'de> for BTreeMap<K, V>
+// ───────────────────────────────────────────────────────────────────────
+// Deserialize — generic over allocator with Default
+// ───────────────────────────────────────────────────────────────────────
+
+impl<'de, K, V, A> Deserialize<'de> for BTreeMap<K, V, A>
 where
     K: Deserialize<'de> + Ord,
     V: Deserialize<'de>,
+    A: Allocator + Clone + Default,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        struct BTreeMapVisitor<K, V> {
-            _marker: PhantomData<BTreeMap<K, V>>,
+        struct BTreeMapVisitor<K, V, A> {
+            _marker: PhantomData<(K, V, A)>,
         }
 
-        impl<'de, K, V> Visitor<'de> for BTreeMapVisitor<K, V>
+        impl<'de, K, V, A> Visitor<'de> for BTreeMapVisitor<K, V, A>
         where
             K: Deserialize<'de> + Ord,
             V: Deserialize<'de>,
+            A: Allocator + Clone + Default,
         {
-            type Value = BTreeMap<K, V>;
+            type Value = BTreeMap<K, V, A>;
 
             fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("a map")
             }
 
-            fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+            fn visit_map<Ma>(self, mut map: Ma) -> Result<Self::Value, Ma::Error>
             where
-                A: MapAccess<'de>,
+                Ma: MapAccess<'de>,
             {
-                let mut values = BTreeMap::new();
+                let mut values = BTreeMap::new_in(A::default());
 
                 while let Some((key, value)) = map.next_entry()? {
                     values.insert(key, value);
@@ -60,11 +78,11 @@ where
                 Ok(values)
             }
 
-            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+            fn visit_seq<Sa>(self, mut seq: Sa) -> Result<Self::Value, Sa::Error>
             where
-                A: SeqAccess<'de>,
+                Sa: SeqAccess<'de>,
             {
-                let mut values = BTreeMap::new();
+                let mut values = BTreeMap::new_in(A::default());
 
                 while let Some((key, value)) = seq.next_element()? {
                     values.insert(key, value);
