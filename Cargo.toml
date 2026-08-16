@@ -1,6 +1,6 @@
 [package]
 name = "arena-btreemap"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "A BTreeMap that supports custom allocators on stable Rust, ported from std"
@@ -11,13 +11,18 @@ readme = "README.md"
 
 [dependencies]
 allocator-api2 = "0.4"
+serde = { version = "1.0", default-features = false, optional = true }
 
 [dev-dependencies]
 bumpalo = { version = "3.20", features = ["allocator-api2"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+postcard = { version = "1", default-features = false, features = ["alloc"] }
 
 [features]
 default = ["std"]
 std = []
+serde = ["dep:serde"]
 # Enable this for no_std builds (alloc-only)
 # Note: some functionality may be limited without std
 no_std = []

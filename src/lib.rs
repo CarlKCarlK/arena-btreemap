@@ -95,3 +95,9 @@ pub use btree::map::BTreeMap;
 
 // Re-export allocator types for convenience
 pub use crate::alloc::{Allocator, AllocError, Global};
+
+/// Serde `Serialize`/`Deserialize` impls for `BTreeMap`.
+///
+/// Enabled by the `serde` cargo feature.
+#[cfg(feature = "serde")]
+mod serde_impls;
