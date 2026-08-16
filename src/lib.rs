@@ -71,9 +71,16 @@
 #![allow(clippy::needless_pass_by_ref_mut)]
 #![allow(clippy::doc_lazy_continuation)]
 #![allow(clippy::needless_question_mark)]
+#![allow(clippy::question_mark)]
 #![allow(clippy::unnecessary_mut_passed)]
 #![allow(clippy::unnecessary_unwrap)]
 #![allow(clippy::module_inception)]
+#![allow(clippy::manual_map)]
+#![allow(clippy::mem_replace_option_with_none)]
+// Dead code: items used by BTreeSet (not exported) or internal test helpers.
+#![allow(dead_code)]
+// Unexpected cfg: randomized_layouts is a std test cfg, not used in our crate
+#![allow(unexpected_cfgs)]
 
 /// Re-exports of allocator types from `allocator-api2`.
 ///

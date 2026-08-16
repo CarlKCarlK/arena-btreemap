@@ -49,9 +49,6 @@ fn stress_10k_inserts_then_removes() {
 
 #[test]
 fn stress_random_operations() {
-    use std::collections::hash_map::DefaultHasher;
-    use std::hash::{Hash, Hasher};
-
     let mut map = BTreeMap::new();
     let mut std_map = StdBTreeMap::new();
 
@@ -69,7 +66,7 @@ fn stress_random_operations() {
         match op {
             0 => {
                 // Insert
-                let val = key as i32 * 2;
+                let val = key * 2;
                 assert_eq!(map.insert(key, val), std_map.insert(key, val));
             }
             1 => {

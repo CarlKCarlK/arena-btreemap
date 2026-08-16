@@ -207,7 +207,7 @@ fn retain_with_custom_allocator() {
         map.insert(i, i);
     }
 
-    map.retain(|&k, &mut v| k % 2 == 0);
+    map.retain(|&k, &mut _v| k % 2 == 0);
 
     assert_eq!(map.len(), 25);
     for k in map.keys() {

@@ -1,5 +1,23 @@
 use core::{mem, ptr};
-use std::process::abort;
+
+#[cfg(feature = "std")]
+fn abort() -> ! {
+    std::process::abort()
+}
+
+#[cfg(not(feature = "std"))]
+fn abort() -> ! {
+    // In no_std, use intrinsic abort. This requires the wasm32 target
+    // to have the `abort` intrinsic, which it does.
+    struct Abort;
+    impl Drop for Abort {
+        fn drop(&mut self) {
+            panic!("abort() called in no_std context");
+        }
+    }
+    let _abort = Abort;
+    panic!("abort in no_std");
+}
 
 /// This replaces the value behind the `v` unique reference by calling the
 /// relevant function.
