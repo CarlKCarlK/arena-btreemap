@@ -53,6 +53,27 @@
 //! this crate is ported.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+// The ported std source has bounds in both impl headers and where clauses,
+// which triggers clippy::multiple_bound_locations. This is inherent to the
+// std source code and not worth modifying the proven algorithm to fix.
+#![allow(clippy::multiple_bound_locations)]
+// The std BTreeMap uses complex types intentionally — the type definitions
+// encode invariants about the tree structure. Suppressing these avoids
+// modifying the proven algorithm for style preferences.
+#![allow(clippy::type_complexity)]
+#![allow(clippy::needless_lifetimes)]
+#![allow(clippy::should_implement_trait)]
+#![allow(clippy::drop_non_drop)]
+#![allow(clippy::clone_on_copy)]
+#![allow(clippy::needless_borrow)]
+#![allow(clippy::manual_strip)]
+#![allow(clippy::deref_addrof)]
+#![allow(clippy::needless_pass_by_ref_mut)]
+#![allow(clippy::doc_lazy_continuation)]
+#![allow(clippy::needless_question_mark)]
+#![allow(clippy::unnecessary_mut_passed)]
+#![allow(clippy::unnecessary_unwrap)]
+#![allow(clippy::module_inception)]
 
 /// Re-exports of allocator types from `allocator-api2`.
 ///
@@ -66,4 +87,4 @@ pub mod btree;
 pub use btree::map::BTreeMap;
 
 // Re-export allocator types for convenience
-pub use crate::alloc::{Allocator, Global};
+pub use crate::alloc::{Allocator, AllocError, Global};

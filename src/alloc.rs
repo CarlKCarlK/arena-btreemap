@@ -5,7 +5,7 @@
 //! std source resolve to this module.
 
 pub use allocator_api2::alloc::{
-    alloc, Allocator, Global, Layout, System,
+    alloc, Allocator, AllocError, Global, Layout, System,
 };
 
 /// Re-export of `Box` from `allocator-api2`.
