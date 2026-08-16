@@ -1,0 +1,59 @@
+//! # arena-btreemap
+//!
+//! A [`BTreeMap`] that supports custom allocators on **stable Rust**, ported
+//! from the standard library's implementation.
+//!
+//! ## Why?
+//!
+//! The standard library's `BTreeMap` is already fully parameterized over
+//! `A: Allocator + Clone = Global` — but `new_in(alloc)` is gated behind the
+//! nightly-only `allocator_api` feature. This crate unlocks that existing
+//! support on stable Rust by porting the implementation with
+//! [`allocator-api2`](https://crates.io/crates/allocator-api2).
+//!
+//! ## O(1) Drop with Arena Allocation
+//!
+//! When paired with [`bumpalo`](https://crates.io/crates/bumpalo), a bump
+//! allocator, dropping a `BTreeMap` becomes O(1) — the arena resets a single
+//! pointer instead of walking every tree node.
+//!
+//! ```rust
+//! use arena_btreemap::BTreeMap;
+//! use bumpalo::Bump;
+//!
+//! let bump = Bump::new();
+//! let mut map = BTreeMap::new_in(&bump);
+//! map.insert("hello", "world");
+//! map.insert("foo", "bar");
+//!
+//! // When `map` drops, the arena's bump pointer resets — no per-node deallocation.
+//! // When `bump` drops, all memory is freed in one operation.
+//! ```
+//!
+//! ## Drop-in Replacement
+//!
+//! The API is identical to `std::collections::BTreeMap`. Switching is a
+//! type alias change: `BTreeMap<K, V>` → `arena_btreemap::BTreeMap<K, V>`.
+//! Construction sites change from `BTreeMap::new()` to `BTreeMap::new_in(alloc)`.
+//! All read sites (`.iter()`, `.get()`, `.keys()`) work unchanged.
+//!
+//! ## License
+//!
+//! MIT OR Apache-2.0 — same as the Rust standard library source from which
+//! this crate is ported.
+
+#![cfg_attr(not(feature = "std"), no_std)]
+
+/// Re-exports of allocator types from `allocator-api2`.
+///
+/// This module mirrors the structure of `std::alloc` but redirects to
+/// `allocator-api2` for stable Rust compatibility with custom allocators.
+pub mod alloc;
+
+/// B-Tree implementation ported from std.
+pub mod btree;
+
+pub use btree::map::BTreeMap;
+
+// Re-export allocator types for convenience
+pub use crate::alloc::{Allocator, Global};

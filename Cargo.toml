@@ -1,0 +1,28 @@
+[package]
+name = "arena-btreemap"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "A BTreeMap that supports custom allocators on stable Rust, ported from std"
+repository = "https://github.com/guan-tends/arena-btreemap"
+keywords = ["btreemap", "arena", "allocator", "btree", "allocation"]
+categories = ["data-structures", "memory-management", "no-std"]
+readme = "README.md"
+
+[dependencies]
+allocator-api2 = "0.4"
+
+[dev-dependencies]
+bumpalo = { version = "3.20", features = ["allocator-api2"] }
+
+[features]
+default = ["std"]
+std = []
+# Enable this for no_std builds (alloc-only)
+# Note: some functionality may be limited without std
+no_std = []
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
