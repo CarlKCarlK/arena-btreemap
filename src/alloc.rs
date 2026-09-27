@@ -4,9 +4,9 @@
 //! the stable allocator API. All references to `crate::alloc` in the original
 //! std source resolve to this module.
 
-pub use allocator_api2::alloc::{
-    alloc, Allocator, AllocError, Global, Layout, System,
-};
+#[cfg(feature = "std")]
+pub use allocator_api2::alloc::System;
+pub use allocator_api2::alloc::{alloc, AllocError, Allocator, Global, Layout};
 
 /// Re-export of `Box` from `allocator-api2`.
 /// In std, `Box` lives at `crate::boxed::Box`. Here we re-export it from

@@ -10,7 +10,7 @@ categories = ["data-structures", "memory-management", "no-std"]
 readme = "README.md"
 
 [dependencies]
-allocator-api2 = "0.4"
+allocator-api2 = { version = "0.4", default-features = false, features = ["alloc"] }
 serde = { version = "1.0", default-features = false, optional = true }
 
 [dev-dependencies]
@@ -21,7 +21,7 @@ postcard = { version = "1", default-features = false, features = ["alloc"] }
 
 [features]
 default = ["std"]
-std = []
+std = ["allocator-api2/std"]
 serde = ["dep:serde"]
 # Enable this for no_std builds (alloc-only)
 # Note: some functionality may be limited without std
