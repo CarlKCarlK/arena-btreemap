@@ -618,6 +618,37 @@ impl<K, V> BTreeMap<K, V> {
     pub const fn new() -> BTreeMap<K, V> {
         BTreeMap { root: None, length: 0, alloc: ManuallyDrop::new(Global), _marker: PhantomData }
     }
+
+    /// Builds a `BTreeMap` directly from strictly increasing, unique keys.
+    ///
+    /// Unlike [`FromIterator::from_iter`], this constructor does not collect,
+    /// sort, or deduplicate the input before building the tree.
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure that each key is strictly greater than the
+    /// preceding key according to its [`Ord`] implementation. In particular,
+    /// the input must contain no duplicate keys.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use arena_btreemap::BTreeMap;
+    ///
+    /// let map = unsafe {
+    ///     BTreeMap::from_sorted_unique_iter_unchecked([(1, "one"), (3, "three")])
+    /// };
+    /// assert_eq!(map.get(&3), Some(&"three"));
+    /// ```
+    pub unsafe fn from_sorted_unique_iter_unchecked<I>(iter: I) -> Self
+    where
+        K: Ord,
+        I: IntoIterator<Item = (K, V)>,
+    {
+        // SAFETY: The caller promises the ordering required by the delegated
+        // constructor.
+        unsafe { Self::from_sorted_unique_iter_in_unchecked(iter, Global) }
+    }
 }
 
 impl<K, V, A: Allocator + Clone> BTreeMap<K, V, A> {
@@ -657,6 +688,28 @@ impl<K, V, A: Allocator + Clone> BTreeMap<K, V, A> {
     #[must_use]
     pub const fn new_in(alloc: A) -> BTreeMap<K, V, A> {
         BTreeMap { root: None, length: 0, alloc: ManuallyDrop::new(alloc), _marker: PhantomData }
+    }
+
+    /// Builds a `BTreeMap` directly from strictly increasing, unique keys,
+    /// using the supplied allocator.
+    ///
+    /// Unlike [`FromIterator::from_iter`], this constructor does not collect,
+    /// sort, or deduplicate the input before building the tree.
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure that each key is strictly greater than the
+    /// preceding key according to its [`Ord`] implementation. In particular,
+    /// the input must contain no duplicate keys.
+    pub unsafe fn from_sorted_unique_iter_in_unchecked<I>(iter: I, alloc: A) -> Self
+    where
+        K: Ord,
+        I: IntoIterator<Item = (K, V)>,
+    {
+        let mut root = Root::new(alloc.clone());
+        let mut length = 0;
+        root.bulk_push(iter.into_iter(), &mut length, alloc.clone());
+        BTreeMap { root: Some(root), length, alloc: ManuallyDrop::new(alloc), _marker: PhantomData }
     }
 }
 
