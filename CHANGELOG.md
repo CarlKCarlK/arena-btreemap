@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `BTreeMap::from_sorted_unique_iter_unchecked` for direct bulk construction
+  from strictly increasing, unique keys.
+- `BTreeMap::from_sorted_unique_iter_in_unchecked` for the equivalent custom
+  allocator use case.
+
+### Fixed
+
+- Preserve alloc-only `no_std` builds by disabling the default
+  `allocator-api2` `std` feature and enabling it only through the crate's `std`
+  feature.
+- Support Rust 1.87 by avoiding newer standard-library APIs in the ported
+  implementation and doctests.
+
 ## [0.1.2] - 2026-08-17
 
 ### Changed
@@ -40,3 +57,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `core::intrinsics::abort()` → `std::process::abort()` (std) / panic (no_std)
 
 [0.1.0]: https://github.com/guan-tends/arena-btreemap/releases/tag/v0.1.0
+[Unreleased]: https://github.com/CarlKCarlK/arena-btreemap/compare/v0.1.2...sorted-unique-constructor
