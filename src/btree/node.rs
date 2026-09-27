@@ -35,7 +35,7 @@ use core::marker::PhantomData;
 use core::mem::{self, MaybeUninit};
 use core::num::NonZero;
 use core::ptr::{self, NonNull};
-use core::slice::SliceIndex;
+use core::slice::{self, SliceIndex};
 
 use crate::alloc::{Allocator, Layout};
 use crate::alloc::Box;
@@ -393,7 +393,10 @@ impl<'a, K: 'a, V: 'a, Type> NodeRef<marker::Immut<'a>, K, V, Type> {
     /// Borrows a view into the keys stored in the node.
     pub(super) fn keys(&self) -> &[K] {
         let leaf = self.into_leaf();
-        unsafe { leaf.keys.get_unchecked(..usize::from(leaf.len)).assume_init_ref() }
+        let len = usize::from(leaf.len);
+        // SAFETY: The node invariant guarantees that the first `len` keys are
+        // initialized, and the returned slice cannot outlive the borrowed node.
+        unsafe { slice::from_raw_parts(leaf.keys.as_ptr().cast::<K>(), len) }
     }
 }
 

@@ -258,7 +258,7 @@ impl<'a, K: Ord, V, A: Allocator + Clone> Entry<'a, K, V, A> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::BTreeMap;
+    /// use arena_btreemap::BTreeMap;
     ///
     /// let mut map: BTreeMap<&str, String> = BTreeMap::new();
     /// let entry = map.entry("poneyland").insert_entry("hoho".to_string());
@@ -359,8 +359,8 @@ impl<'a, K: Ord, V, A: Allocator + Clone> VacantEntry<'a, K, V, A> {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::BTreeMap;
-    /// use std::collections::btree_map::Entry;
+    /// use arena_btreemap::BTreeMap;
+    /// use arena_btreemap::btree::map::Entry;
     ///
     /// let mut map: BTreeMap<&str, u32> = BTreeMap::new();
     ///
